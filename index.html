@@ -1,0 +1,569 @@
+<title>BASX Hydronics</title>
+<style>
+  :root {
+    --bg: #EFF1EE;
+    --surface: #FFFFFF;
+    --surface-2: #E4E8E3;
+    --ink: #202723;
+    --muted: #5C6660;
+    --accent: #2F6B50;
+    --accent-ink: #F4F7F4;
+    --accent-soft: #DDE9E2;
+    --wrong: #B7392B;
+    --wrong-soft: #F3DDD9;
+    --brass: #8A6E2C;
+    --line: #D5DAD5;
+    --shadow: 0 1px 2px rgba(32,39,35,.08), 0 6px 18px rgba(32,39,35,.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151917;
+      --surface: #1E2421;
+      --surface-2: #262D29;
+      --ink: #E7ECE8;
+      --muted: #93A099;
+      --accent: #59A57E;
+      --accent-ink: #10201A;
+      --accent-soft: #24382E;
+      --wrong: #E06A5A;
+      --wrong-soft: #3A2622;
+      --brass: #C8A55A;
+      --line: #313A35;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151917;
+    --surface: #1E2421;
+    --surface-2: #262D29;
+    --ink: #E7ECE8;
+    --muted: #93A099;
+    --accent: #59A57E;
+    --accent-ink: #10201A;
+    --accent-soft: #24382E;
+    --wrong: #E06A5A;
+    --wrong-soft: #3A2622;
+    --brass: #C8A55A;
+    --line: #313A35;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+    overscroll-behavior-y: contain;
+  }
+
+  #app {
+    height: 100dvh;
+    max-width: 520px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px calc(10px + env(safe-area-inset-bottom));
+    gap: 12px;
+  }
+
+  /* ---------- nameplate header ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .plate {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 6px 12px;
+    box-shadow: var(--shadow);
+  }
+  .plate b {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  .plate span {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--brass);
+    font-weight: 700;
+  }
+  .tabs {
+    display: flex;
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .tabs button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .tabs button.on {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .counter {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ---------- flashcards ---------- */
+  #flash { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 12px; }
+  #flash.on { display: flex; }
+
+  .cardbar { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; }
+
+  .flipwrap { flex: 1; min-height: 0; perspective: 1200px; }
+  .flip {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .45s cubic-bezier(.2,.7,.25,1);
+    cursor: pointer;
+  }
+  .flip.flipped { transform: rotateY(180deg); }
+  @media (prefers-reduced-motion: reduce) {
+    .flip { transition: none; }
+  }
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+  }
+  .face.back {
+    transform: rotateY(180deg);
+    border-color: var(--accent);
+    justify-content: center;
+    text-align: center;
+  }
+  .face .desc { margin: 0; }
+  .face .desc.long { font-size: 15px; line-height: 1.5; }
+  .face ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .face li b { color: var(--accent); }
+  .tapnote { margin-top: auto; padding-top: 8px; font-size: 12px; color: var(--muted); text-align: center; }
+  .bigname {
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-wrap: balance;
+    margin: 0;
+    color: var(--accent);
+  }
+  .hint { font-size: 14px; color: var(--brass); margin: 0; text-wrap: balance; }
+
+  .controls { display: flex; gap: 10px; }
+  .controls button {
+    appearance: none;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 14px 0;
+    flex: 1;
+    cursor: pointer;
+  }
+  .controls button:active { background: var(--surface-2); }
+  .controls .go { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- quiz ---------- */
+  #quiz { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 12px; }
+  #quiz.on { display: flex; }
+
+  .qcard {
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  .qcard .desc { margin: 8px 0 0; }
+  .qcard .desc.long { font-size: 14.5px; line-height: 1.5; }
+  .qcard ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14.5px; }
+
+  .choices { display: grid; gap: 8px; }
+  .choices button {
+    appearance: none;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    text-align: left;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+  }
+  .choices button:disabled { cursor: default; }
+  .choices button.hit { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .choices button.miss { background: var(--wrong-soft); border-color: var(--wrong); color: var(--wrong); }
+  .choices button.dim { opacity: .45; }
+
+  .quizbar { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; }
+  .score {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .score b { color: var(--accent); }
+
+  #nextbtn {
+    appearance: none;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border: 0;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: 10px;
+    padding: 15px 0;
+    width: 100%;
+    cursor: pointer;
+    visibility: hidden;
+  }
+
+  /* ---------- results ---------- */
+  .result {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 24px 18px;
+    overflow-y: auto;
+  }
+  .result .bigscore {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .result .verdict { font-size: 15px; color: var(--muted); margin: 0; }
+  .result .missed {
+    text-align: left;
+    background: var(--wrong-soft);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .result .missed b { color: var(--wrong); text-transform: uppercase; letter-spacing: .05em; font-size: 12px; }
+  .result .missed ul { margin: 6px 0 0; padding-left: 18px; }
+  .best { font-size: 12px; color: var(--brass); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+
+  button:focus-visible, .flip:focus-visible {
+    outline: 2.5px solid var(--brass);
+    outline-offset: 2px;
+  }
+</style>
+
+<div id="app">
+  <header>
+    <div class="plate"><b>BASX</b><span>Hydronics</span></div>
+    <nav class="tabs" aria-label="Mode">
+      <button id="tab-flash" class="on">Cards</button>
+      <button id="tab-quiz">Quiz</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Flashcards -->
+    <section id="flash" class="on">
+      <div class="cardbar">
+        <span class="eyebrow">Flashcards</span>
+        <span class="counter" id="flash-counter">1 / 6</span>
+      </div>
+      <div class="flipwrap">
+        <div class="flip" id="flip" role="button" tabindex="0" aria-label="Flip card">
+          <div class="face front">
+            <span class="eyebrow">Description</span>
+            <div id="flash-desc" class="desc"></div>
+            <div class="tapnote">Tap to reveal &middot; swipe for next</div>
+          </div>
+          <div class="face back">
+            <span class="eyebrow">Component</span>
+            <p class="bigname" id="flash-name"></p>
+            <p class="hint" id="flash-hint"></p>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="btn-shuffle">Shuffle</button>
+        <button id="btn-prev">&larr; Prev</button>
+        <button id="btn-next" class="go">Next &rarr;</button>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section id="quiz">
+      <div class="quizbar">
+        <span class="eyebrow">Quiz</span>
+        <span class="score" id="quiz-score"></span>
+      </div>
+      <div id="quiz-body" style="display:contents"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+const CARDS = [
+  {
+    name: "Glycol Tank",
+    hint: "Green feeder head on a translucent poly reservoir (Axiom).",
+    desc: "Stores and circulates a mixture of water and glycol (a form of antifreeze) for closed-loop cooling and heating systems. It prevents the coolant from freezing, protects pipes from corrosion, and provides a stable thermal reservoir that supports precise temperature control."
+  },
+  {
+    name: "Sump Pump",
+    hint: "Stainless submersible with a strainer base (Bell & Gossett).",
+    desc: "Used to continuously remove accumulated condensation. It reliably lifts excess water from the unit's collection pan to a designated drain point, preventing overflow, water damage, and system shutdown."
+  },
+  {
+    name: "Heat Exchanger",
+    hint: "Brazed copper plate stack with four ports.",
+    desc: "Transfers thermal energy between two mediums (like refrigerant, water, or air) without mixing them. These core components maximize energy efficiency and regulate temperature."
+  },
+  {
+    name: "Expansion Tank",
+    hint: "Red vertical steel tank (Taco) — vertical installation only.",
+    desc: "A safety device used in closed-loop heating (hydronic) and chilled water systems. It absorbs expanding fluid as temperatures rise. By doing so, it prevents dangerous pressure spikes, protects pipe fittings from rupturing, and stops system pressure relief valves from continuously discharging."
+  },
+  {
+    name: "Multi-Purpose Valve",
+    hint: "Green cast-iron angle body, flanged, with metering ports (Taco MPV).",
+    bullets: [
+      ["Shut-Off Valve", "isolates the circulator or centrifugal pump so it can be serviced or replaced without draining the entire hydronic loop."],
+      ["Non-Slam Check Valve", "an internal spring-loaded disc stops backward flow when the pump turns off — eliminating water hammer and reverse spin."],
+      ["Balancing / Throttling Valve", "an adjustable disc or stem restricts flow so the exact required GPM reaches specific zones or heat exchangers."],
+      ["Flow Metering", "a calibrated nameplate and metering ports let technicians measure pressure drop and calculate the precise flow rate for system balancing."]
+    ]
+  },
+  {
+    name: "Air Scoop",
+    hint: "Green cast-iron inline body with a top tapping for the automatic air vent.",
+    desc: "Heavy-duty, cast-iron devices designed to eliminate air in large-scale, closed-loop hydronic heating and cooling systems. They operate by slowing water velocity, allowing a baffle to separate air bubbles so they can be expelled via an automatic air vent."
+  }
+];
+
+const $ = id => document.getElementById(id);
+
+function shuffled(a) {
+  const x = a.slice();
+  for (let i = x.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [x[i], x[j]] = [x[j], x[i]];
+  }
+  return x;
+}
+
+function descHTML(card, long) {
+  if (card.bullets) {
+    return "<ul>" + card.bullets.map(([t, d]) =>
+      `<li><b>${t}:</b> ${d}</li>`).join("") + "</ul>";
+  }
+  return `<p class="desc${long ? " long" : ""}">${card.desc}</p>`;
+}
+
+/* ---------- mode tabs ---------- */
+function setMode(mode) {
+  $("flash").classList.toggle("on", mode === "flash");
+  $("quiz").classList.toggle("on", mode === "quiz");
+  $("tab-flash").classList.toggle("on", mode === "flash");
+  $("tab-quiz").classList.toggle("on", mode === "quiz");
+  if (mode === "quiz" && !quizStarted) startQuiz();
+}
+$("tab-flash").onclick = () => setMode("flash");
+$("tab-quiz").onclick = () => setMode("quiz");
+
+/* ---------- flashcards ---------- */
+let deck = shuffled(CARDS);
+let fi = 0;
+
+function renderFlash() {
+  const card = deck[fi];
+  $("flip").classList.remove("flipped");
+  const long = !!card.bullets || (card.desc && card.desc.length > 260);
+  $("flash-desc").innerHTML = descHTML(card, long);
+  $("flash-name").textContent = card.name;
+  $("flash-hint").textContent = card.hint;
+  $("flash-counter").textContent = (fi + 1) + " / " + deck.length;
+}
+
+$("flip").onclick = () => $("flip").classList.toggle("flipped");
+$("flip").onkeydown = e => {
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); $("flip").classList.toggle("flipped"); }
+};
+$("btn-next").onclick = () => { fi = (fi + 1) % deck.length; renderFlash(); };
+$("btn-prev").onclick = () => { fi = (fi - 1 + deck.length) % deck.length; renderFlash(); };
+$("btn-shuffle").onclick = () => { deck = shuffled(CARDS); fi = 0; renderFlash(); };
+
+let touchX = null;
+$("flip").addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
+$("flip").addEventListener("touchend", e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  touchX = null;
+  if (Math.abs(dx) > 60) (dx < 0 ? $("btn-next") : $("btn-prev")).click();
+}, { passive: true });
+
+/* ---------- quiz ---------- */
+let quizStarted = false;
+let order = [], qi = 0, right = 0, missed = [];
+
+function startQuiz(subset) {
+  quizStarted = true;
+  order = shuffled(subset || CARDS);
+  qi = 0; right = 0; missed = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const card = order[qi];
+  $("quiz-score").innerHTML = `Q ${qi + 1}/${order.length} &nbsp;&middot;&nbsp; <b>${right}</b> right`;
+
+  const others = shuffled(CARDS.filter(c => c.name !== card.name)).slice(0, 3);
+  const options = shuffled([card, ...others]);
+  const long = !!card.bullets || (card.desc && card.desc.length > 260);
+
+  $("quiz-body").innerHTML = `
+    <div class="qcard">
+      <span class="eyebrow">Which component is this?</span>
+      ${descHTML(card, long)}
+    </div>
+    <div class="choices">
+      ${options.map(o => `<button data-name="${o.name}">${o.name}</button>`).join("")}
+    </div>
+    <button id="nextbtn">${qi + 1 === order.length ? "See Score" : "Next Question"}</button>`;
+
+  document.querySelectorAll(".choices button").forEach(btn => {
+    btn.onclick = () => answer(btn, card);
+  });
+}
+
+function answer(btn, card) {
+  const buttons = document.querySelectorAll(".choices button");
+  buttons.forEach(b => { b.disabled = true; });
+  const hitName = card.name;
+  if (btn.dataset.name === hitName) {
+    btn.classList.add("hit");
+    right++;
+    buttons.forEach(b => { if (b !== btn) b.classList.add("dim"); });
+  } else {
+    btn.classList.add("miss");
+    missed.push(card);
+    buttons.forEach(b => {
+      if (b.dataset.name === hitName) b.classList.add("hit");
+      else if (b !== btn) b.classList.add("dim");
+    });
+  }
+  $("quiz-score").innerHTML = `Q ${qi + 1}/${order.length} &nbsp;&middot;&nbsp; <b>${right}</b> right`;
+  const nb = $("nextbtn");
+  nb.style.visibility = "visible";
+  nb.onclick = () => {
+    qi++;
+    if (qi < order.length) renderQuestion();
+    else renderResult();
+  };
+}
+
+function renderResult() {
+  const pct = Math.round(100 * right / order.length);
+  let best = 0;
+  try {
+    best = Number(localStorage.getItem("basx-best") || 0);
+    if (pct > best) { best = pct; localStorage.setItem("basx-best", String(best)); }
+  } catch (e) {}
+
+  const verdict =
+    pct === 100 ? "Perfect. Loop is purged and balanced." :
+    pct >= 80 ? "Solid — one more pass and it's locked in." :
+    pct >= 50 ? "Getting there. Run the missed ones again." :
+    "Back to the cards — then retry.";
+
+  $("quiz-score").textContent = "";
+  $("quiz-body").innerHTML = `
+    <div class="result">
+      <span class="eyebrow">Result</span>
+      <div class="bigscore">${right}/${order.length}</div>
+      <p class="verdict">${verdict}</p>
+      ${best ? `<div class="best">Best: ${best}%</div>` : ""}
+      ${missed.length ? `
+        <div class="missed">
+          <b>Missed</b>
+          <ul>${missed.map(m => `<li>${m.name}</li>`).join("")}</ul>
+        </div>` : ""}
+      <div class="controls">
+        ${missed.length ? `<button id="btn-missed">Retry Missed</button>` : ""}
+        <button id="btn-again" class="go">New Round</button>
+      </div>
+    </div>`;
+
+  $("btn-again").onclick = () => startQuiz();
+  const bm = $("btn-missed");
+  if (bm) bm.onclick = () => startQuiz(missed.slice());
+}
+
+renderFlash();
+</script>
