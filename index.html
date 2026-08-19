@@ -141,6 +141,16 @@
     color: var(--muted);
   }
 
+  /* ---------- component art ---------- */
+  .chip {
+    background: var(--surface-2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chip svg { display: block; width: 100%; height: 100%; }
+
   /* ---------- flashcards ---------- */
   #flash { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 12px; }
   #flash.on { display: flex; }
@@ -177,15 +187,17 @@
     transform: rotateY(180deg);
     border-color: var(--accent);
     justify-content: center;
+    align-items: center;
     text-align: center;
   }
+  .face.back .chip { width: 132px; height: 132px; flex: none; }
   .face .desc { margin: 0; }
   .face .desc.long { font-size: 15px; line-height: 1.5; }
   .face ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
   .face li b { color: var(--accent); }
   .tapnote { margin-top: auto; padding-top: 8px; font-size: 12px; color: var(--muted); text-align: center; }
   .bigname {
-    font-size: 27px;
+    font-size: 26px;
     font-weight: 800;
     letter-spacing: .05em;
     text-transform: uppercase;
@@ -195,7 +207,7 @@
   }
   .hint { font-size: 14px; color: var(--brass); margin: 0; text-wrap: balance; }
 
-  .controls { display: flex; gap: 10px; }
+  .controls { display: flex; gap: 10px; width: 100%; }
   .controls button {
     appearance: none;
     font: inherit;
@@ -215,8 +227,31 @@
   .controls .go { border-color: var(--accent); color: var(--accent); }
 
   /* ---------- quiz ---------- */
-  #quiz { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 12px; }
+  #quiz { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 10px; }
   #quiz.on { display: flex; }
+
+  .modes { display: flex; gap: 6px; }
+  .modes button {
+    appearance: none;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 7px 0;
+    flex: 1;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .modes button.on {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
 
   .qcard {
     background: var(--surface);
@@ -227,10 +262,30 @@
     overflow-y: auto;
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
   .qcard .desc { margin: 8px 0 0; }
   .qcard .desc.long { font-size: 14.5px; line-height: 1.5; }
   .qcard ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14.5px; }
+  .qcard .qart { flex: 1; min-height: 0; margin-top: 10px; }
+  .qcard .qart .chip { height: 100%; max-height: 220px; aspect-ratio: 1; margin: 0 auto; }
+  .qcard .qname {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qcard .qname p {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-wrap: balance;
+    text-align: center;
+    color: var(--accent);
+    margin: 0;
+  }
 
   .choices { display: grid; gap: 8px; }
   .choices button {
@@ -248,8 +303,12 @@
     padding: 13px 14px;
     cursor: pointer;
   }
+  .choices.imgs { grid-template-columns: 1fr 1fr; }
+  .choices.imgs button { padding: 8px; }
+  .choices.imgs .chip { aspect-ratio: 10 / 7; }
   .choices button:disabled { cursor: default; }
   .choices button.hit { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .choices.imgs button.hit { background: var(--accent-soft); }
   .choices button.miss { background: var(--wrong-soft); border-color: var(--wrong); color: var(--wrong); }
   .choices button.dim { opacity: .45; }
 
@@ -285,6 +344,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     gap: 16px;
     text-align: center;
     background: var(--surface);
@@ -309,6 +369,7 @@
     border-radius: 10px;
     padding: 12px 14px;
     font-size: 14px;
+    align-self: stretch;
   }
   .result .missed b { color: var(--wrong); text-transform: uppercase; letter-spacing: .05em; font-size: 12px; }
   .result .missed ul { margin: 6px 0 0; padding-left: 18px; }
@@ -345,6 +406,7 @@
           </div>
           <div class="face back">
             <span class="eyebrow">Component</span>
+            <div class="chip" id="flash-art"></div>
             <p class="bigname" id="flash-name"></p>
             <p class="hint" id="flash-hint"></p>
           </div>
@@ -363,12 +425,111 @@
         <span class="eyebrow">Quiz</span>
         <span class="score" id="quiz-score"></span>
       </div>
+      <div class="modes" id="modes" role="group" aria-label="Question type">
+        <button data-mode="mix" class="on">Mix</button>
+        <button data-mode="img">Img&rarr;Name</button>
+        <button data-mode="name">Name&rarr;Img</button>
+        <button data-mode="desc">Desc&rarr;Name</button>
+      </div>
       <div id="quiz-body" style="display:contents"></div>
     </section>
   </main>
 </div>
 
 <script>
+/* Stylized renderings of the six components, drawn to match the printed
+   photo cards (colors/silhouettes of the real products). 120x120 viewBox. */
+const ART = {
+  "Glycol Tank": `
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect x="32" y="40" width="56" height="70" rx="8" fill="#EDEFEA" stroke="#AEB6B0" stroke-width="2"/>
+      <rect x="24" y="14" width="72" height="32" rx="9" fill="#2F5B43"/>
+      <rect x="24" y="40" width="72" height="7" rx="3.5" fill="#234533"/>
+      <circle cx="58" cy="30" r="6" fill="#DDE1DB" stroke="#1B3527" stroke-width="2"/>
+      <circle cx="80" cy="30" r="4.5" fill="#C0392B"/>
+      <rect x="34" y="24" width="8" height="12" rx="2" fill="#1B3527"/>
+      <path d="M58 47 C 46 68, 74 80, 58 100" fill="none" stroke="#9AA39D" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="58" cy="102" r="5" fill="#B08A3E"/>
+    </svg>`,
+  "Sump Pump": `
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect x="33" y="10" width="16" height="16" rx="3" fill="#AEB6B0"/>
+      <path d="M56 24 v-8 h22 v8 h-6 v-4 h-10 v4 z" fill="#3A3F3C"/>
+      <rect x="30" y="24" width="60" height="12" rx="4" fill="#B9C0BA"/>
+      <rect x="32" y="36" width="56" height="50" rx="5" fill="#D6DAD4" stroke="#A7AFA9" stroke-width="2"/>
+      <rect x="40" y="44" width="40" height="15" rx="2" fill="#FFFFFF" stroke="#C5CBC4"/>
+      <circle cx="47" cy="51.5" r="4" fill="#C0392B"/>
+      <rect x="40" y="61" width="40" height="8" fill="#2A2E2B"/>
+      <path d="M27 86 h66 l-7 20 h-52 z" fill="#B9C0BA"/>
+      <rect x="38" y="94" width="7" height="9" fill="#40453F"/>
+      <rect x="50" y="94" width="7" height="9" fill="#40453F"/>
+      <rect x="62" y="94" width="7" height="9" fill="#40453F"/>
+      <rect x="74" y="94" width="7" height="9" fill="#40453F"/>
+    </svg>`,
+  "Heat Exchanger": `
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <path d="M28 28 L52 14 V98 L28 112 Z" fill="#8C5A3C"/>
+      <path d="M32 34 l16 -9 M32 46 l16 -9 M32 58 l16 -9 M32 70 l16 -9 M32 82 l16 -9 M32 94 l16 -9"
+            stroke="#6E4229" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="52" y="14" width="44" height="84" rx="5" fill="#DBDFD9" stroke="#AEB5AF" stroke-width="2"/>
+      <circle cx="66" cy="28" r="7.5" fill="#C9CFCB" stroke="#8F968F" stroke-width="2"/>
+      <circle cx="84" cy="26" r="7.5" fill="#C9CFCB" stroke="#8F968F" stroke-width="2"/>
+      <circle cx="66" cy="86" r="7.5" fill="#C9CFCB" stroke="#8F968F" stroke-width="2"/>
+      <circle cx="84" cy="84" r="7.5" fill="#C9CFCB" stroke="#8F968F" stroke-width="2"/>
+      <circle cx="66" cy="28" r="3.5" fill="#4A423C"/>
+      <circle cx="84" cy="26" r="3.5" fill="#4A423C"/>
+      <circle cx="66" cy="86" r="3.5" fill="#4A423C"/>
+      <circle cx="84" cy="84" r="3.5" fill="#4A423C"/>
+      <rect x="60" y="50" width="28" height="14" rx="2" fill="#C9CFCB" opacity=".7"/>
+    </svg>`,
+  "Expansion Tank": `
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect x="55" y="10" width="10" height="10" rx="2" fill="#AEB6B0"/>
+      <path d="M36 44 a24 26 0 0 1 48 0 V86 H36 Z" fill="#C0392B"/>
+      <path d="M36 44 a24 26 0 0 1 12 -22 V86 H36 Z" fill="#A93226"/>
+      <rect x="52" y="34" width="18" height="11" rx="1.5" fill="#F5F1E8"/>
+      <rect x="50" y="52" width="22" height="14" rx="1.5" fill="#F5F1E8"/>
+      <rect x="53" y="56" width="16" height="5" fill="#2F6B50"/>
+      <path d="M40 86 h40 v12 a4 4 0 0 1 -4 4 h-32 a4 4 0 0 1 -4 -4 z" fill="#A93226"/>
+      <ellipse cx="60" cy="96" rx="11" ry="6" fill="#241F1E"/>
+    </svg>`,
+  "Multi-Purpose Valve": `
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect x="44" y="10" width="32" height="8" rx="2" fill="#2F5B43"/>
+      <circle cx="49" cy="14" r="1.8" fill="#1B3527"/>
+      <circle cx="71" cy="14" r="1.8" fill="#1B3527"/>
+      <rect x="52" y="18" width="16" height="20" fill="#376A4E"/>
+      <rect x="12" y="58" width="8" height="30" rx="2" fill="#2F5B43"/>
+      <circle cx="16" cy="63" r="1.8" fill="#1B3527"/>
+      <circle cx="16" cy="83" r="1.8" fill="#1B3527"/>
+      <rect x="20" y="64" width="24" height="18" fill="#376A4E"/>
+      <rect x="46" y="98" width="30" height="8" rx="2" fill="#2F5B43"/>
+      <circle cx="52" cy="102" r="1.8" fill="#1B3527"/>
+      <circle cx="70" cy="102" r="1.8" fill="#1B3527"/>
+      <rect x="52" y="78" width="18" height="20" fill="#376A4E"/>
+      <circle cx="60" cy="58" r="23" fill="#3E7657" stroke="#2A4F3B" stroke-width="2"/>
+      <circle cx="52" cy="50" r="8" fill="#4C8A66" opacity=".8"/>
+      <line x1="42" y1="42" x2="31" y2="30" stroke="#B08A3E" stroke-width="5" stroke-linecap="round"/>
+      <line x1="79" y1="43" x2="90" y2="32" stroke="#B08A3E" stroke-width="5" stroke-linecap="round"/>
+    </svg>`,
+  "Air Scoop": `
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <rect x="8" y="40" width="10" height="42" rx="3" fill="#2F5B43"/>
+      <circle cx="13" cy="46" r="2" fill="#1B3527"/>
+      <circle cx="13" cy="61" r="2" fill="#1B3527"/>
+      <circle cx="13" cy="76" r="2" fill="#1B3527"/>
+      <rect x="102" y="40" width="10" height="42" rx="3" fill="#2F5B43"/>
+      <circle cx="107" cy="46" r="2" fill="#1B3527"/>
+      <circle cx="107" cy="61" r="2" fill="#1B3527"/>
+      <circle cx="107" cy="76" r="2" fill="#1B3527"/>
+      <rect x="55" y="24" width="10" height="14" rx="2" fill="#376A4E"/>
+      <rect x="51" y="20" width="18" height="6" rx="2" fill="#2F5B43"/>
+      <path d="M38 48 q22 -20 44 0 z" fill="#3E7657" stroke="#2A4F3B" stroke-width="2"/>
+      <rect x="18" y="46" width="84" height="30" rx="11" fill="#3E7657" stroke="#2A4F3B" stroke-width="2"/>
+      <rect x="26" y="52" width="30" height="6" rx="3" fill="#4C8A66" opacity=".8"/>
+    </svg>`
+};
+
 const CARDS = [
   {
     name: "Glycol Tank",
@@ -427,15 +588,15 @@ function descHTML(card, long) {
 }
 
 /* ---------- mode tabs ---------- */
-function setMode(mode) {
-  $("flash").classList.toggle("on", mode === "flash");
-  $("quiz").classList.toggle("on", mode === "quiz");
-  $("tab-flash").classList.toggle("on", mode === "flash");
-  $("tab-quiz").classList.toggle("on", mode === "quiz");
-  if (mode === "quiz" && !quizStarted) startQuiz();
+function setTab(tab) {
+  $("flash").classList.toggle("on", tab === "flash");
+  $("quiz").classList.toggle("on", tab === "quiz");
+  $("tab-flash").classList.toggle("on", tab === "flash");
+  $("tab-quiz").classList.toggle("on", tab === "quiz");
+  if (tab === "quiz" && !quizStarted) startQuiz();
 }
-$("tab-flash").onclick = () => setMode("flash");
-$("tab-quiz").onclick = () => setMode("quiz");
+$("tab-flash").onclick = () => setTab("flash");
+$("tab-quiz").onclick = () => setTab("quiz");
 
 /* ---------- flashcards ---------- */
 let deck = shuffled(CARDS);
@@ -446,6 +607,7 @@ function renderFlash() {
   $("flip").classList.remove("flipped");
   const long = !!card.bullets || (card.desc && card.desc.length > 260);
   $("flash-desc").innerHTML = descHTML(card, long);
+  $("flash-art").innerHTML = ART[card.name];
   $("flash-name").textContent = card.name;
   $("flash-hint").textContent = card.hint;
   $("flash-counter").textContent = (fi + 1) + " / " + deck.length;
@@ -469,67 +631,112 @@ $("flip").addEventListener("touchend", e => {
 }, { passive: true });
 
 /* ---------- quiz ---------- */
+const TYPES = ["img2name", "name2img", "desc2name"];
 let quizStarted = false;
-let order = [], qi = 0, right = 0, missed = [];
+let quizMode = "mix";           // mix | img | name | desc
+let round = [], qi = 0, right = 0, missed = [];
 
-function startQuiz(subset) {
+document.querySelectorAll("#modes button").forEach(btn => {
+  btn.onclick = () => {
+    quizMode = btn.dataset.mode;
+    document.querySelectorAll("#modes button").forEach(b =>
+      b.classList.toggle("on", b === btn));
+    startQuiz();
+  };
+});
+
+function typeFor(mode) {
+  if (mode === "img") return "img2name";
+  if (mode === "name") return "name2img";
+  if (mode === "desc") return "desc2name";
+  return TYPES[Math.floor(Math.random() * TYPES.length)];
+}
+
+function startQuiz(retryItems) {
   quizStarted = true;
-  order = shuffled(subset || CARDS);
+  round = retryItems
+    ? shuffled(retryItems)
+    : shuffled(CARDS).map(card => ({ card, type: typeFor(quizMode) }));
   qi = 0; right = 0; missed = [];
   renderQuestion();
 }
 
+function updateScore() {
+  $("quiz-score").innerHTML = `Q ${Math.min(qi + 1, round.length)}/${round.length} &nbsp;&middot;&nbsp; <b>${right}</b> right`;
+}
+
 function renderQuestion() {
-  const card = order[qi];
-  $("quiz-score").innerHTML = `Q ${qi + 1}/${order.length} &nbsp;&middot;&nbsp; <b>${right}</b> right`;
+  const { card, type } = round[qi];
+  updateScore();
 
   const others = shuffled(CARDS.filter(c => c.name !== card.name)).slice(0, 3);
   const options = shuffled([card, ...others]);
-  const long = !!card.bullets || (card.desc && card.desc.length > 260);
+
+  let prompt, choices;
+  if (type === "img2name") {
+    prompt = `
+      <span class="eyebrow">Name this component</span>
+      <div class="qart"><div class="chip">${ART[card.name]}</div></div>`;
+    choices = `<div class="choices">
+      ${options.map(o => `<button data-name="${o.name}">${o.name}</button>`).join("")}
+    </div>`;
+  } else if (type === "name2img") {
+    prompt = `
+      <span class="eyebrow">Pick the matching component</span>
+      <div class="qname"><p>${card.name}</p></div>`;
+    choices = `<div class="choices imgs">
+      ${options.map(o => `
+        <button data-name="${o.name}" aria-label="Option: unlabeled component image">
+          <div class="chip">${ART[o.name]}</div>
+        </button>`).join("")}
+    </div>`;
+  } else {
+    const long = !!card.bullets || (card.desc && card.desc.length > 260);
+    prompt = `
+      <span class="eyebrow">Which component is this?</span>
+      ${descHTML(card, long)}`;
+    choices = `<div class="choices">
+      ${options.map(o => `<button data-name="${o.name}">${o.name}</button>`).join("")}
+    </div>`;
+  }
 
   $("quiz-body").innerHTML = `
-    <div class="qcard">
-      <span class="eyebrow">Which component is this?</span>
-      ${descHTML(card, long)}
-    </div>
-    <div class="choices">
-      ${options.map(o => `<button data-name="${o.name}">${o.name}</button>`).join("")}
-    </div>
-    <button id="nextbtn">${qi + 1 === order.length ? "See Score" : "Next Question"}</button>`;
+    <div class="qcard">${prompt}</div>
+    ${choices}
+    <button id="nextbtn">${qi + 1 === round.length ? "See Score" : "Next Question"}</button>`;
 
   document.querySelectorAll(".choices button").forEach(btn => {
-    btn.onclick = () => answer(btn, card);
+    btn.onclick = () => answer(btn, card, type);
   });
 }
 
-function answer(btn, card) {
+function answer(btn, card, type) {
   const buttons = document.querySelectorAll(".choices button");
   buttons.forEach(b => { b.disabled = true; });
-  const hitName = card.name;
-  if (btn.dataset.name === hitName) {
+  if (btn.dataset.name === card.name) {
     btn.classList.add("hit");
     right++;
     buttons.forEach(b => { if (b !== btn) b.classList.add("dim"); });
   } else {
     btn.classList.add("miss");
-    missed.push(card);
+    missed.push({ card, type });
     buttons.forEach(b => {
-      if (b.dataset.name === hitName) b.classList.add("hit");
+      if (b.dataset.name === card.name) b.classList.add("hit");
       else if (b !== btn) b.classList.add("dim");
     });
   }
-  $("quiz-score").innerHTML = `Q ${qi + 1}/${order.length} &nbsp;&middot;&nbsp; <b>${right}</b> right`;
+  updateScore();
   const nb = $("nextbtn");
   nb.style.visibility = "visible";
   nb.onclick = () => {
     qi++;
-    if (qi < order.length) renderQuestion();
+    if (qi < round.length) renderQuestion();
     else renderResult();
   };
 }
 
 function renderResult() {
-  const pct = Math.round(100 * right / order.length);
+  const pct = Math.round(100 * right / round.length);
   let best = 0;
   try {
     best = Number(localStorage.getItem("basx-best") || 0);
@@ -546,13 +753,13 @@ function renderResult() {
   $("quiz-body").innerHTML = `
     <div class="result">
       <span class="eyebrow">Result</span>
-      <div class="bigscore">${right}/${order.length}</div>
+      <div class="bigscore">${right}/${round.length}</div>
       <p class="verdict">${verdict}</p>
       ${best ? `<div class="best">Best: ${best}%</div>` : ""}
       ${missed.length ? `
         <div class="missed">
           <b>Missed</b>
-          <ul>${missed.map(m => `<li>${m.name}</li>`).join("")}</ul>
+          <ul>${missed.map(m => `<li>${m.card.name}</li>`).join("")}</ul>
         </div>` : ""}
       <div class="controls">
         ${missed.length ? `<button id="btn-missed">Retry Missed</button>` : ""}
