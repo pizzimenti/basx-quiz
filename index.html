@@ -14,8 +14,6 @@
     --brass: #8A6E2C;
     --line: #D5DAD5;
     --shadow: 0 1px 2px rgba(32,39,35,.08), 0 6px 18px rgba(32,39,35,.09);
-    --logo-on-light: block;
-    --logo-on-dark: none;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -32,8 +30,6 @@
       --brass: #C8A55A;
       --line: #313A35;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
-      --logo-on-light: none;
-      --logo-on-dark: block;
     }
   }
   :root[data-theme="dark"] {
@@ -50,8 +46,6 @@
     --brass: #C8A55A;
     --line: #313A35;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
-    --logo-on-light: none;
-    --logo-on-dark: block;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -106,31 +100,6 @@
     color: var(--brass);
     font-weight: 700;
   }
-  .tabs {
-    display: flex;
-    border: 1.5px solid var(--line);
-    border-radius: 6px;
-    overflow: hidden;
-    background: var(--surface);
-  }
-  .tabs button {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-  .tabs button.on {
-    background: var(--accent);
-    color: var(--accent-ink);
-  }
-
   main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
 
   .eyebrow {
@@ -164,62 +133,6 @@
     object-fit: contain;
   }
 
-  /* ---------- flashcards ---------- */
-  #flash { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 12px; }
-  #flash.on { display: flex; }
-
-  .cardbar { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; }
-
-  .flipwrap { flex: 1; min-height: 0; perspective: 1200px; }
-  .flip {
-    position: relative;
-    width: 100%; height: 100%;
-    transform-style: preserve-3d;
-    transition: transform .45s cubic-bezier(.2,.7,.25,1);
-    cursor: pointer;
-  }
-  .flip.flipped { transform: rotateY(180deg); }
-  @media (prefers-reduced-motion: reduce) {
-    .flip { transition: none; }
-  }
-  .face {
-    position: absolute; inset: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    background: var(--surface);
-    border: 1.5px solid var(--line);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    padding: 20px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
-  }
-  .face.back {
-    transform: rotateY(180deg);
-    border-color: var(--accent);
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
-  .face.back .chip { width: 132px; height: 132px; flex: none; }
-  .face .desc { margin: 0; }
-  .face .desc.long { font-size: 15px; line-height: 1.5; }
-  .face ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
-  .face li b { color: var(--accent); }
-  .tapnote { margin-top: auto; padding-top: 8px; font-size: 12px; color: var(--muted); text-align: center; }
-  .bigname {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-    text-wrap: balance;
-    margin: 0;
-    color: var(--accent);
-  }
-  .hint { font-size: 14px; color: var(--brass); margin: 0; text-wrap: balance; }
-
   .controls { display: flex; gap: 10px; width: 100%; }
   .controls button {
     appearance: none;
@@ -240,8 +153,7 @@
   .controls .go { border-color: var(--accent); color: var(--accent); }
 
   /* ---------- quiz ---------- */
-  #quiz { flex: 1; min-height: 0; display: none; flex-direction: column; gap: 10px; }
-  #quiz.on { display: flex; }
+  #quiz { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
 
   .modes { display: flex; gap: 6px; }
   .modes button {
@@ -388,103 +300,18 @@
   .result .missed ul { margin: 6px 0 0; padding-left: 18px; }
   .best { font-size: 12px; color: var(--brass); letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
 
-  button:focus-visible, .flip:focus-visible {
+  button:focus-visible {
     outline: 2.5px solid var(--brass);
     outline-offset: 2px;
   }
-
-  /* ---------- launch splash ---------- */
-  #splash {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    opacity: 0;
-    animation: splash 1.9s ease forwards; /* 1s in, 0.4s hold, 0.5s out */
-  }
-  #splash svg { width: min(62vw, 300px); height: auto; }
-  #splash .lg-on-light { display: var(--logo-on-light); }
-  #splash .lg-on-dark { display: var(--logo-on-dark); }
-  @keyframes splash {
-    0%     { opacity: 0; }
-    52.6%  { opacity: 1; }
-    73.7%  { opacity: 1; }
-    100%   { opacity: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #splash { display: none; }
-  }
 </style>
-
-<div id="splash" aria-hidden="true"><svg class="lg-on-light" role="img" aria-label="BASX" width="188" height="35" viewBox="0 0 188 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_4235_1351)">
-<path d="M30.8138 22.5991C30.8138 21.2 29.8906 20.3002 28.2751 20.3002H9.17479V28.1494H28.2738C29.8894 28.1494 30.8126 26.9993 30.8126 25.6002V22.5991H30.8138ZM30.6984 9.24965C30.6984 7.84925 29.7752 6.69914 28.1597 6.69914H9.17479V13.6486H28.1584C29.774 13.6486 30.6972 12.7488 30.6972 11.3484V9.2484L30.6984 9.24965ZM31.2171 35H0V0H31.2171C35.4868 0 39.7578 3.6493 39.7578 7.39997V9.34977C39.7578 13.1505 36.353 16.3993 32.0832 16.8999C36.2388 17.2491 40.0469 20.6493 40.0469 24.599V27.6C40.0469 31.3494 35.4881 35 31.2183 35" fill="#1D1D1D"/>
-<path d="M68.2647 9.44864L75.3623 21.8482H61.1683L68.2647 9.44864ZM64.5719 0L43.6836 35H53.6662L57.1864 28.8503H79.3442L82.8644 35H93.424L72.8818 0H64.5719Z" fill="#1D1D1D"/>
-<path d="M127.582 35H105.655C100.807 35 96.3652 31.0992 96.3652 27.4499V25.7503L105.714 24.4V27.7001H127.525V21.2H105.945C101.675 21.2 97.2313 17.3993 97.2313 13.6498V8.1496C97.2313 4.40019 102.366 0 106.636 0H127.236C132.084 0 136.526 3.8996 136.526 7.5489V8.99936L127.178 10.3497V7.29985H106.693V13.7988H128.273C132.543 13.7988 136.988 17.5995 136.988 21.3489V26.8491C136.988 30.5986 131.852 35 127.582 35Z" fill="#1D1D1D"/>
-<path d="M174.495 0L164.165 11.1994L153.49 0H141.606L158.281 16.95L141.027 35H151.876L163.82 22.0998L176.11 35H187.998L169.647 16.4006L185.344 0H174.495Z" fill="#E54221"/>
-</g>
-<defs>
-<clipPath id="clip0_4235_1351">
-<rect width="188" height="35" fill="white"/>
-</clipPath>
-</defs>
-</svg>
-<svg class="lg-on-dark" role="img" aria-label="BASX" width="188" height="35" viewBox="0 0 188 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_4359_654)">
-<path d="M30.8138 22.5991C30.8138 21.2 29.8906 20.3002 28.2751 20.3002H9.17479V28.1494H28.2738C29.8894 28.1494 30.8126 26.9993 30.8126 25.6002V22.5991H30.8138ZM30.6984 9.24965C30.6984 7.84925 29.7752 6.69914 28.1597 6.69914H9.17479V13.6486H28.1584C29.774 13.6486 30.6972 12.7488 30.6972 11.3484V9.2484L30.6984 9.24965ZM31.2171 35H0V0H31.2171C35.4868 0 39.7578 3.6493 39.7578 7.39997V9.34977C39.7578 13.1505 36.353 16.3993 32.0832 16.8999C36.2388 17.2491 40.0469 20.6493 40.0469 24.599V27.6C40.0469 31.3494 35.4881 35 31.2183 35" fill="white"/>
-<path d="M68.2647 9.44864L75.3623 21.8482H61.1683L68.2647 9.44864ZM64.5719 0L43.6836 35H53.6662L57.1864 28.8503H79.3442L82.8644 35H93.424L72.8818 0H64.5719Z" fill="white"/>
-<path d="M127.582 35H105.655C100.807 35 96.3652 31.0992 96.3652 27.4499V25.7503L105.714 24.4V27.7001H127.525V21.2H105.945C101.675 21.2 97.2313 17.3993 97.2313 13.6498V8.1496C97.2313 4.40019 102.366 0 106.636 0H127.236C132.084 0 136.526 3.8996 136.526 7.5489V8.99936L127.178 10.3497V7.29985H106.693V13.7988H128.273C132.543 13.7988 136.988 17.5995 136.988 21.3489V26.8491C136.988 30.5986 131.852 35 127.582 35Z" fill="white"/>
-<path d="M174.495 0L164.165 11.1994L153.49 0H141.606L158.281 16.95L141.027 35H151.876L163.82 22.0998L176.11 35H187.998L169.647 16.4006L185.344 0H174.495Z" fill="#E54221"/>
-</g>
-<defs>
-<clipPath id="clip0_4359_654">
-<rect width="188" height="35" fill="white"/>
-</clipPath>
-</defs>
-</svg></div>
 
 <div id="app">
   <header>
     <div class="plate"><b>BASX</b><span>Hydronics</span></div>
-    <nav class="tabs" aria-label="Mode">
-      <button id="tab-flash" class="on">Cards</button>
-      <button id="tab-quiz">Quiz</button>
-    </nav>
   </header>
 
   <main>
-    <!-- Flashcards -->
-    <section id="flash" class="on">
-      <div class="cardbar">
-        <span class="eyebrow">Flashcards</span>
-        <span class="counter" id="flash-counter">1 / 6</span>
-      </div>
-      <div class="flipwrap">
-        <div class="flip" id="flip" role="button" tabindex="0" aria-label="Flip card">
-          <div class="face front">
-            <span class="eyebrow">Description</span>
-            <div id="flash-desc" class="desc"></div>
-            <div class="tapnote">Tap to reveal &middot; swipe for next</div>
-          </div>
-          <div class="face back">
-            <span class="eyebrow">Component</span>
-            <div class="chip" id="flash-art"></div>
-            <p class="bigname" id="flash-name"></p>
-            <p class="hint" id="flash-hint"></p>
-          </div>
-        </div>
-      </div>
-      <div class="controls">
-        <button id="btn-shuffle">Shuffle</button>
-        <button id="btn-prev">&larr; Prev</button>
-        <button id="btn-next" class="go">Next &rarr;</button>
-      </div>
-    </section>
-
     <!-- Quiz -->
     <section id="quiz">
       <div class="quizbar">
@@ -570,52 +397,8 @@ function descHTML(card, long) {
   return `<p class="desc${long ? " long" : ""}">${card.desc}</p>`;
 }
 
-/* ---------- mode tabs ---------- */
-function setTab(tab) {
-  $("flash").classList.toggle("on", tab === "flash");
-  $("quiz").classList.toggle("on", tab === "quiz");
-  $("tab-flash").classList.toggle("on", tab === "flash");
-  $("tab-quiz").classList.toggle("on", tab === "quiz");
-  if (tab === "quiz" && !quizStarted) startQuiz();
-}
-$("tab-flash").onclick = () => setTab("flash");
-$("tab-quiz").onclick = () => setTab("quiz");
-
-/* ---------- flashcards ---------- */
-let deck = shuffled(CARDS);
-let fi = 0;
-
-function renderFlash() {
-  const card = deck[fi];
-  $("flip").classList.remove("flipped");
-  const long = !!card.bullets || (card.desc && card.desc.length > 260);
-  $("flash-desc").innerHTML = descHTML(card, long);
-  $("flash-art").innerHTML = ART[card.name];
-  $("flash-name").textContent = card.name;
-  $("flash-hint").textContent = card.hint;
-  $("flash-counter").textContent = (fi + 1) + " / " + deck.length;
-}
-
-$("flip").onclick = () => $("flip").classList.toggle("flipped");
-$("flip").onkeydown = e => {
-  if (e.key === " " || e.key === "Enter") { e.preventDefault(); $("flip").classList.toggle("flipped"); }
-};
-$("btn-next").onclick = () => { fi = (fi + 1) % deck.length; renderFlash(); };
-$("btn-prev").onclick = () => { fi = (fi - 1 + deck.length) % deck.length; renderFlash(); };
-$("btn-shuffle").onclick = () => { deck = shuffled(CARDS); fi = 0; renderFlash(); };
-
-let touchX = null;
-$("flip").addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
-$("flip").addEventListener("touchend", e => {
-  if (touchX === null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  touchX = null;
-  if (Math.abs(dx) > 60) (dx < 0 ? $("btn-next") : $("btn-prev")).click();
-}, { passive: true });
-
 /* ---------- quiz ---------- */
 const TYPES = ["img2name", "name2img", "desc2name"];
-let quizStarted = false;
 let quizMode = "mix";           // mix | img | name | desc
 let round = [], qi = 0, right = 0, missed = [];
 
@@ -636,7 +419,6 @@ function typeFor(mode) {
 }
 
 function startQuiz(retryItems) {
-  quizStarted = true;
   round = retryItems
     ? shuffled(retryItems)
     : shuffled(CARDS).map(card => ({ card, type: typeFor(quizMode) }));
@@ -755,11 +537,5 @@ function renderResult() {
   if (bm) bm.onclick = () => startQuiz(missed.slice());
 }
 
-renderFlash();
-
-const splash = document.getElementById("splash");
-if (splash) {
-  splash.addEventListener("animationend", () => splash.remove());
-  setTimeout(() => { if (splash.isConnected) splash.remove(); }, 2600);
-}
+startQuiz();
 </script>
