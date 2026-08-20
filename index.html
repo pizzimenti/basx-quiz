@@ -163,14 +163,18 @@
     font-weight: 800;
     letter-spacing: .05em;
     text-transform: uppercase;
+    line-height: 1.25;
     border: 1.5px solid var(--line);
     background: var(--surface);
     color: var(--muted);
-    border-radius: 999px;
-    padding: 7px 0;
+    border-radius: 10px;
+    padding: 6px 2px;
     flex: 1;
     cursor: pointer;
-    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
   .modes button.on {
     border-color: var(--accent);
@@ -325,10 +329,10 @@
         <span class="score" id="quiz-score"></span>
       </div>
       <div class="modes" id="modes" role="group" aria-label="Question type">
-        <button data-mode="mix" class="on">Mix</button>
-        <button data-mode="img">Img&rarr;Name</button>
-        <button data-mode="name">Name&rarr;Img</button>
-        <button data-mode="desc">Desc&rarr;Name</button>
+        <button data-mode="mix" class="on"><span>Mix</span></button>
+        <button data-mode="img"><span>Image to</span><span>Name</span></button>
+        <button data-mode="name"><span>Name to</span><span>Image</span></button>
+        <button data-mode="desc"><span>Desc to</span><span>Name</span></button>
       </div>
       <div id="quiz-body" style="display:contents"></div>
     </section>
