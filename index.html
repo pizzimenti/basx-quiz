@@ -195,11 +195,12 @@
   .qcard ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14.5px; }
   .qcard .qart { flex: 1; min-height: 0; margin-top: 10px; }
   .qcard .qart .chip { height: 100%; max-height: 220px; aspect-ratio: 1; margin: 0 auto; }
+  .qcard.namecard { flex: 0 0 auto; overflow: visible; }
   .qcard .qname {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 12px 0 6px;
   }
   .qcard .qname p {
     font-size: 28px;
@@ -228,9 +229,14 @@
     padding: 13px 14px;
     cursor: pointer;
   }
-  .choices.imgs { grid-template-columns: 1fr 1fr; }
-  .choices.imgs button { padding: 8px; }
-  .choices.imgs .chip { aspect-ratio: 10 / 7; }
+  .choices.imgs {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+  }
+  .choices.imgs button { padding: 8px; min-height: 0; display: flex; }
+  .choices.imgs .chip { flex: 1; min-width: 0; }
   .choices button:disabled { cursor: default; }
   .choices button.hit { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .choices.imgs button.hit { background: var(--accent-soft); }
@@ -437,7 +443,7 @@ function renderQuestion() {
   const others = shuffled(CARDS.filter(c => c.name !== card.name)).slice(0, 3);
   const options = shuffled([card, ...others]);
 
-  let prompt, choices;
+  let prompt, choices, cardCls = "qcard";
   if (type === "img2name") {
     prompt = `
       <span class="eyebrow">Name this component</span>
@@ -446,6 +452,7 @@ function renderQuestion() {
       ${options.map(o => `<button data-name="${o.name}">${o.name}</button>`).join("")}
     </div>`;
   } else if (type === "name2img") {
+    cardCls = "qcard namecard";
     prompt = `
       <span class="eyebrow">Pick the matching component</span>
       <div class="qname"><p>${card.name}</p></div>`;
@@ -466,7 +473,7 @@ function renderQuestion() {
   }
 
   $("quiz-body").innerHTML = `
-    <div class="qcard">${prompt}</div>
+    <div class="${cardCls}">${prompt}</div>
     ${choices}
     <button id="nextbtn">${qi + 1 === round.length ? "See Score" : "Next Question"}</button>`;
 
